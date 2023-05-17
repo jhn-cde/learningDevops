@@ -19,14 +19,13 @@ public class DictionaryDataService
   }
   public DictionaryAlfa? UpdateDictionary(DictionaryAlfa dictionary){
     Console.WriteLine($"{dictionary.Id}: {dictionary.Childs}");
-
-    /*var dicDbo = _context.Dictionaries.Find(dictionary.Id);
+    var dicDbo = _context.Dictionaries.Find(dictionary.Id);
     if(dicDbo == null) return null;
 
     dicDbo.Name = dictionary.Name;
     dicDbo.Value = dictionary.Value;
     dicDbo.Childs = dictionary.Childs;
-    _context.SaveChanges();*/
+    _context.SaveChanges();
     return dictionary;
   }
 }

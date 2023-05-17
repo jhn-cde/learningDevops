@@ -17,7 +17,11 @@ public class DictionaryController: ControllerBase
     return _dictionaryBusinessService.GetDictionaries();
   }
   [HttpPost]
-  public Dictionary InsertDictionaries(Dictionary dictionary){
+  public Dictionary InsertDictionary(Dictionary dictionary){
     return _dictionaryBusinessService.InsertDictionary(dictionary);
+  }
+  [HttpPut]
+  public bool UpdateDictionary(Dictionary dictionary){
+    return _dictionaryBusinessService.UpdateDictionary(dictionary);
   }
 }

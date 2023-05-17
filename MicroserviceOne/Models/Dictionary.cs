@@ -5,7 +5,6 @@ namespace MicroserviceOne
 {
   public class Dictionary
   {
-    [Key]
     public long Id {get; set;}
     public string Name {get; set;}
     public string Value {get; set;}
@@ -16,6 +15,5 @@ namespace MicroserviceOne
       Value = value;
       FatherId = fatherId;
     }
-
   }
 }
