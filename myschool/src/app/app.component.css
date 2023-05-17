@@ -1,0 +1,29 @@
+
+h1, h2{
+  margin: 0;
+}
+
+.content{
+  padding: 2rem;
+}
+.main{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items:flex-start;
+  margin: 1.5rem;
+}
+.form{
+  padding-right: 4rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  max-width: 30%;
+}
+.form .field{
+  margin-right: 1rem;
+}
+.form .submit{
+  width: 100%;
+}

@@ -1,0 +1,49 @@
+version: "3.8"
+services:
+  angular:
+    build:
+      context: ./myschool
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    links:
+      - api
+  api:
+    build:
+      context: ./MicroserviceOne
+      dockerfile: Dockerfile
+    ports:
+      - "5000:80"
+    links:
+      - db
+    environment:
+      - DBHOST=db
+      - DBPORT=3306
+      - MYSQL_PASSWORD=140156
+      - MYSQL_USER=jhn
+      - MYSQL_DATABASE=school
+      - ASPNETCORE_ENVIRONMENT=Development
+  db:
+    image: mysql:8
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=140156
+      - MYSQL_PASSWORD=140156
+      - MYSQL_USER=jhn
+      - MYSQL_DATABASE=school
+    volumes:
+      - db_data:/var/lib/mysql
+  proxy:
+    build:
+      context: ./proxy
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    links:
+      - angular
+      - api
+volumes:
+  db_data:

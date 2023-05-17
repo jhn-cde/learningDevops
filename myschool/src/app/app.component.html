@@ -1,0 +1,66 @@
+<div class="content">
+  <h1>Escuela</h1>
+  
+  <div class="main">
+    <form class="form" [formGroup]="formGroup" (ngSubmit)="addStudent()">
+      <mat-form-field class="field" appearance="outline">
+        <mat-label>Código</mat-label>
+        <input matInput type="number" placeholder="Código" required formControlName="id">
+      </mat-form-field>
+      <mat-form-field class="field" appearance="outline">
+        <mat-label>Nombres</mat-label>
+        <input required matInput placeholder="Nombres" formControlName="firstName">
+      </mat-form-field>
+      <mat-form-field class="field" appearance="outline">
+        <mat-label>Apellidos</mat-label>
+        <input required matInput placeholder="Apellidos" formControlName="lastName">
+      </mat-form-field>
+      <button class="submit" type="button" mat-raised-button disabled 
+        *ngIf="id.invalid || firstName.invalid || lastName.invalid; else Submit"
+      >Agregar Estudiante</button>
+      <ng-template #Submit>
+        <button class="submit" type="submit" mat-raised-button color="primary"
+        >Agregar Estudiante</button>
+      </ng-template>
+    </form>
+    <div>
+      <h2>Lista de estudiantes</h2>
+      <mat-list>
+        <mat-list-item *ngFor="let student of students">
+          {{student.id}} - {{student.firstName}} {{student.lastName}}
+        </mat-list-item>
+      </mat-list>    
+    </div>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="main">
+    <form class="form" [formGroup]="formGroupCourses" (ngSubmit)="addStudentCourse()">
+      <mat-form-field class="field" appearance="outline">
+        <mat-label>Nombre de curso</mat-label>
+        <input required matInput placeholder="Nombres" formControlName="courseName">
+      </mat-form-field>
+      <mat-form-field class="field" appearance="outline">
+        <mat-label>Código de Estudiante</mat-label>
+        <input matInput type="number" placeholder="Código" required formControlName="studentId">
+      </mat-form-field>
+      <button class="submit" type="button" mat-raised-button disabled 
+        *ngIf="studentId.invalid || courseName.invalid; else SubmitCourse"
+      >Agregar Curso</button>
+      <ng-template #SubmitCourse>
+        <button class="submit" type="submit" mat-raised-button color="primary"
+        >Agregar Curso</button>
+      </ng-template>
+    </form>
+    <div>
+      <h2>Lista de Cursos</h2>
+      <mat-list>
+        <mat-list-item *ngFor="let course of courses">
+          {{course.studentId}} - {{course.courseName}}
+        </mat-list-item>
+      </mat-list>    
+    </div>
+  </div>
+
+</div>
