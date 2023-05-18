@@ -17,6 +17,12 @@ public class DictionaryBusinessService
     ConvertToDictionaries(dictionariesNoRel, dictionaries, null);
     return dictionaries;
   }
+  public Dictionary? GetDictionary(int id){
+    List<DictionaryNoRel> dictionariesNoRel = _dictionaryDataService.GetDictionaries();
+    List<Dictionary> dictionaries = new List<Dictionary>();
+    ConvertToDictionaries(dictionariesNoRel, dictionaries, null);
+    return dictionaries.Find(dic => dic.Id == id);
+  }
   public Dictionary InsertDictionary(Dictionary newDictionary){
     List<DictionaryNoRel> dictionariesNoRel = _dictionaryDataService.GetDictionaries();
     List<Dictionary> dictionaries = new List<Dictionary>();
@@ -44,9 +50,11 @@ public class DictionaryBusinessService
     bool updated = false;
 
     var oriChildIndex = dictionaries.FindIndex(rel => rel.Id == dictionary.Id);
+    
+    Console.WriteLine($"--- {dictionary.Id}");
     if(oriChildIndex < 0) return updated;
     
-    if(dictionaries[oriChildIndex].Name == dictionary.Name || dictionaries[oriChildIndex].Value == dictionary.Value)
+    if(dictionaries[oriChildIndex].Name != dictionary.Name || dictionaries[oriChildIndex].Value != dictionary.Value)
       updated = changeContent(dictionary, oriChildIndex, dictionaries);
     if(dictionaries[oriChildIndex].FatherId != dictionary.FatherId)
       updated = changeFather(dictionary, oriChildIndex, dictionaries);

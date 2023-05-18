@@ -16,12 +16,17 @@ public class DictionaryController: ControllerBase
   public List<Dictionary> GetDictionaries(){
     return _dictionaryBusinessService.GetDictionaries();
   }
+  [HttpGet("{id:int}")]
+  public Dictionary? GetDictionary(int id){
+    return _dictionaryBusinessService.GetDictionary(id);
+  }
   [HttpPost]
   public Dictionary InsertDictionary(Dictionary dictionary){
     return _dictionaryBusinessService.InsertDictionary(dictionary);
   }
-  [HttpPut]
-  public bool UpdateDictionary(Dictionary dictionary){
+  [HttpPut("{id:int}")]
+  public bool UpdateDictionary(int id, Dictionary dictionary){
+    dictionary.Id = id;
     return _dictionaryBusinessService.UpdateDictionary(dictionary);
   }
   [HttpDelete("{id:int}")]
