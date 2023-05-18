@@ -141,8 +141,3 @@ public class DictionaryBusinessService
   }
   // ------
 }
-
-public class MyData
-{
-     public List<DictionaryNoRel> data { get; set; }
-}

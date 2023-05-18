@@ -18,7 +18,7 @@ services:
       - db
     environment:
       - DBHOST=db
-      - DBPORT=3306
+      - DBPORT=3307
       - MYSQL_PASSWORD=140156
       - MYSQL_USER=jhn
       - MYSQL_DATABASE=school
@@ -28,7 +28,7 @@ services:
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     ports:
-      - "3306:3306"
+      - "3307:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=140156
       - MYSQL_PASSWORD=140156
