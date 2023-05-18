@@ -53,6 +53,27 @@ public class DictionaryBusinessService
 
     return updated;
   }
+  public bool DeleteDictionary(long id){
+    List<DictionaryNoRel> dictionariesNoRel = _dictionaryDataService.GetDictionaries();
+    List<Dictionary> dictionaries = new List<Dictionary>();
+    ConvertToDictionaries(dictionariesNoRel, dictionaries, null);
+    bool deleted = false;
+
+    var bigFatherNoRel = dictionariesNoRel.Find(dic => dic.Id == id);
+    if(bigFatherNoRel != null){
+      deleted = _dictionaryDataService.DeleteDictionary(id); 
+    } else {
+      var dictionary = dictionaries.Find(dic => dic.Id == id);
+      if(dictionary != null){
+        var bigFather = getBigFather(dictionaries, dictionary);
+        var newDictionaries = dictionaries.FindAll(dic => dic.Id != id);
+        bigFatherNoRel = toNoRelational(bigFather, newDictionaries);
+        _dictionaryDataService.UpdateDictionary(bigFatherNoRel);
+        deleted = true;
+      }
+    }
+    return deleted;
+  }
 
   // EXTRA ------
   private Dictionary getBigFather(List<Dictionary> relList, Dictionary child){
@@ -68,8 +89,8 @@ public class DictionaryBusinessService
     return father;
   }
   // ---
-  private void ConvertToDictionaries(List<DictionaryNoRel> dictionariesAlfa, List<Dictionary> dictionaries, long? fatherId){
-    dictionariesAlfa.ForEach(curDictionary => {
+  private void ConvertToDictionaries(List<DictionaryNoRel> dictionariesNoRel, List<Dictionary> dictionaries, long? fatherId){
+    dictionariesNoRel.ForEach(curDictionary => {
       dictionaries.Add(new Dictionary(curDictionary.Id, curDictionary.Name, curDictionary.Value, fatherId));
       var childs = GetChildList(curDictionary);
       ConvertToDictionaries(childs, dictionaries, curDictionary.Id);

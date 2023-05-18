@@ -24,4 +24,8 @@ public class DictionaryController: ControllerBase
   public bool UpdateDictionary(Dictionary dictionary){
     return _dictionaryBusinessService.UpdateDictionary(dictionary);
   }
+  [HttpDelete("{id:int}")]
+  public bool DeleteDictionary(int id){
+    return _dictionaryBusinessService.DeleteDictionary(id);
+  }
 }
