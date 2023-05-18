@@ -18,7 +18,7 @@ services:
       - db
     environment:
       - DBHOST=db
-      - DBPORT=3307
+      - DBPORT=3306
       - MYSQL_PASSWORD=140156
       - MYSQL_USER=jhn
       - MYSQL_DATABASE=school
