@@ -9,16 +9,15 @@ public class DictionaryDataService
     _context = context;
   }
 
-  public List<DictionaryAlfa> GetDictionaries(){
+  public List<DictionaryNoRel> GetDictionaries(){
     return _context.Dictionaries.ToList();
   } 
-  public DictionaryAlfa InsertDictionary(DictionaryAlfa dictionary){
+  public DictionaryNoRel InsertDictionary(DictionaryNoRel dictionary){
     _context.Dictionaries.Add(dictionary);
     _context.SaveChanges();
     return dictionary;
   }
-  public DictionaryAlfa? UpdateDictionary(DictionaryAlfa dictionary){
-    Console.WriteLine($"{dictionary.Id}: {dictionary.Childs}");
+  public DictionaryNoRel? UpdateDictionary(DictionaryNoRel dictionary){
     var dicDbo = _context.Dictionaries.Find(dictionary.Id);
     if(dicDbo == null) return null;
 
@@ -27,5 +26,13 @@ public class DictionaryDataService
     dicDbo.Childs = dictionary.Childs;
     _context.SaveChanges();
     return dictionary;
+  }
+  public bool DeleteDictionary(long id){
+    var dicDbo = _context.Dictionaries.Find(id);
+    if(dicDbo==null) return false;
+
+    _context.Dictionaries.Remove(dicDbo);
+    _context.SaveChanges();
+    return true;
   }
 }

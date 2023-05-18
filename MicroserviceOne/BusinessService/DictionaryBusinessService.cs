@@ -10,123 +10,139 @@ public class DictionaryBusinessService
     _dictionaryDataService = dictionaryDataService;
   }
 
+  // MAIN ------
   public List<Dictionary> GetDictionaries(){
-    List<DictionaryAlfa> dictionariesAlfa = _dictionaryDataService.GetDictionaries();
-
+    List<DictionaryNoRel> dictionariesNoRel = _dictionaryDataService.GetDictionaries();
     List<Dictionary> dictionaries = new List<Dictionary>();
-    ConvertToDictionaries(dictionariesAlfa, dictionaries, null);
+    ConvertToDictionaries(dictionariesNoRel, dictionaries, null);
     return dictionaries;
   }
   public Dictionary InsertDictionary(Dictionary newDictionary){
-    List<DictionaryAlfa> dictionariesAlfa = _dictionaryDataService.GetDictionaries();
+    List<DictionaryNoRel> dictionariesNoRel = _dictionaryDataService.GetDictionaries();
     List<Dictionary> dictionaries = new List<Dictionary>();
-    ConvertToDictionaries(dictionariesAlfa, dictionaries, null);
+    ConvertToDictionaries(dictionariesNoRel, dictionaries, null);
     long newId = getNewId(dictionaries);
     newDictionary.Id = newId;
 
-    // search for big father in db
-    var bigFatherRoute = getBigFatherRoute(dictionaries, newDictionary);
-
-    // if bigFatherAlfa is null, add bigFather to new row
-    if(bigFatherRoute.Count() == 0)
-      _dictionaryDataService.InsertDictionary(new DictionaryAlfa(newDictionary.Id, newDictionary.Name, newDictionary.Value, null));
-    else{
-      int posRoute = bigFatherRoute.Count()-1;
-      long bigFatherId = bigFatherRoute[posRoute];
-      var bigFatherAlfa = dictionariesAlfa.Find(dic => dic.Id == bigFatherId);
-      if(bigFatherAlfa != null){
-        var func = (List<DictionaryAlfa> childs, Dictionary child, DictionaryAlfa father) => {
-          childs.Add(new DictionaryAlfa(child.Id, child.Name, child.Value, null));
-        };
-        var bigFatherAlfaMod = addDictionaryToBigAlfa(bigFatherAlfa, bigFatherRoute, newDictionary, posRoute-1, func);
-        _dictionaryDataService.UpdateDictionary(bigFatherAlfaMod);
-      }else{
-        Console.WriteLine("ERROR!");
-      }
+    var bigFather = getBigFather(dictionaries, newDictionary);
+    if(bigFather.Id == newDictionary.Id){
+      _dictionaryDataService.InsertDictionary(
+        new DictionaryNoRel(newDictionary.Id, newDictionary.Name, newDictionary.Value, null)
+      );
+    } else {
+      dictionaries.Add(newDictionary);
+      var bigFatherNoRel = toNoRelational(bigFather, dictionaries);
+      _dictionaryDataService.UpdateDictionary(bigFatherNoRel);
     }
     return newDictionary;
   } 
   public bool UpdateDictionary(Dictionary dictionary){
-    List<DictionaryAlfa> dictionariesAlfa = _dictionaryDataService.GetDictionaries();
+    List<DictionaryNoRel> dictionariesNoRel = _dictionaryDataService.GetDictionaries();
     List<Dictionary> dictionaries = new List<Dictionary>();
-    ConvertToDictionaries(dictionariesAlfa, dictionaries, null);
+    ConvertToDictionaries(dictionariesNoRel, dictionaries, null);
 
-    int toupIndex = dictionaries.FindIndex(dic => dic.Id == dictionary.Id);
-    if(toupIndex < 0) return false;
+    bool updated = false;
 
-    var bigFatherRoute = getBigFatherRoute(dictionaries, dictionaries[toupIndex]);
-    bigFatherRoute.Insert(0, dictionary.Id);
+    var oriChildIndex = dictionaries.FindIndex(rel => rel.Id == dictionary.Id);
+    if(oriChildIndex < 0) return updated;
+    
+    if(dictionaries[oriChildIndex].Name == dictionary.Name || dictionaries[oriChildIndex].Value == dictionary.Value)
+      updated = changeContent(dictionary, oriChildIndex, dictionaries);
+    if(dictionaries[oriChildIndex].FatherId != dictionary.FatherId)
+      updated = changeFather(dictionary, oriChildIndex, dictionaries);
 
-    int posRoute = bigFatherRoute.Count()-1;
-    long bigFatherId = bigFatherRoute[posRoute];
-    var bigFatherAlfa = dictionariesAlfa.Find(dic => dic.Id == bigFatherId);
-
-    var func = (List<DictionaryAlfa> list, Dictionary toUpd, DictionaryAlfa toUpdAlfa) => {
-      toUpdAlfa.Name = toUpd.Name;
-      toUpdAlfa.Value = toUpd.Value;
-    };
-    var bigFatherAlfaMod = addDictionaryToBigAlfa(bigFatherAlfa, bigFatherRoute, dictionary, posRoute-1, func);
-    _dictionaryDataService.UpdateDictionary(bigFatherAlfaMod);
-
-    return false;
+    return updated;
   }
 
-  // private functions
-  private List<long> getBigFatherRoute(List<Dictionary> dictionaries, Dictionary child){
-    var father = child;
-    List<long> route = new List<long>();
+  // EXTRA ------
+  private Dictionary getBigFather(List<Dictionary> relList, Dictionary child){
+    var father = new Dictionary(child);
     while(father.FatherId != null){
-      var posibFather = dictionaries.Find(dic => dic.Id == father.FatherId);
-      if(posibFather != null){
-        father = posibFather;
-        route.Add(father.Id);
+      var posibBigFather = relList.Find(dic => dic.Id == father.FatherId);
+      if(posibBigFather != null){
+        father = posibBigFather;
       }
       else
         father.FatherId = null;
     }
-    return route;
-  }
-  //
-  private DictionaryAlfa addDictionaryToBigAlfa(DictionaryAlfa bigFather, List<long> route, Dictionary newChild, int posRoute, Action<List<DictionaryAlfa>, Dictionary, DictionaryAlfa> func){
-    //
-    var childs = GetChilds(bigFather);
-    if (posRoute < 0)
-      func(childs, newChild, bigFather);
-      
-    else{
-      int fatherIndex = childs.FindIndex(dic => dic.Id == route[posRoute]);
-      childs[fatherIndex] = addDictionaryToBigAlfa(childs[fatherIndex], route, newChild, posRoute-1, func);
-    }
-    //
-    string strChilds = SetChilds(childs); 
-    bigFather.Childs = strChilds;
-    return bigFather;
+    return father;
   }
   // ---
-  private void ConvertToDictionaries(List<DictionaryAlfa> dictionariesAlfa, List<Dictionary> dictionaries, long? fatherId){
+  private void ConvertToDictionaries(List<DictionaryNoRel> dictionariesAlfa, List<Dictionary> dictionaries, long? fatherId){
     dictionariesAlfa.ForEach(curDictionary => {
       dictionaries.Add(new Dictionary(curDictionary.Id, curDictionary.Name, curDictionary.Value, fatherId));
-      var childs = GetChilds(curDictionary);
+      var childs = GetChildList(curDictionary);
       ConvertToDictionaries(childs, dictionaries, curDictionary.Id);
     });
   }
-  private List<DictionaryAlfa> GetChilds(DictionaryAlfa father){
-    var empty = new List<DictionaryAlfa>();
+  private List<DictionaryNoRel> GetChildList(DictionaryNoRel father){
+    var empty = new List<DictionaryNoRel>();
     if(father.Childs == null) return empty;
-    var childs = JsonConvert.DeserializeObject<List<DictionaryAlfa>>(father.Childs);
+    var childs = JsonConvert.DeserializeObject<List<DictionaryNoRel>>(father.Childs);
     return childs == null? empty : childs;
-  }
-  private string SetChilds(List<DictionaryAlfa> childs){
-    var strChilds = JsonConvert.SerializeObject(childs);
-    return strChilds;
   }
   private long getNewId(List<Dictionary> dictionaries){
     var maxDicId = dictionaries.MaxBy(dic => dic.Id);
     return maxDicId == null ? 0 : maxDicId.Id+1;
   }
+  // ------
+  private bool changeContent(Dictionary child, int oriChildIndex, List<Dictionary> relList){
+    relList[oriChildIndex].Name = child.Name;
+    relList[oriChildIndex].Value = child.Value;
+    var bigFather = getBigFather(relList, relList[oriChildIndex]);
+    var bigFatherNoRel = toNoRelational(bigFather, relList);
+    _dictionaryDataService.UpdateDictionary(bigFatherNoRel);
+    return true;
+  }
+  private bool changeFather(Dictionary child, int oriChildIndex, List<Dictionary> relList){
+    var lastBigFather = getBigFather(relList, relList[oriChildIndex]);
+    var newBigFather = getBigFather(relList, child);
+    if(newBigFather.Id == child.Id && child.FatherId != null) return false;
+
+    // case 1: last == new
+    // case 2: last != new
+    relList[oriChildIndex] = child;
+    if(lastBigFather.Id == newBigFather.Id){
+      var bigFatherNoRel = toNoRelational(lastBigFather, relList);
+      _dictionaryDataService.UpdateDictionary(bigFatherNoRel);
+    } else{
+      var newBigFatherNoRel = toNoRelational(newBigFather, relList);
+
+      // child's new father is himself, insert new row
+      if(newBigFather.Id == child.Id)
+        _dictionaryDataService.InsertDictionary(newBigFatherNoRel);
+      else
+        _dictionaryDataService.UpdateDictionary(newBigFatherNoRel);
+
+      // child's last father is himself and is already added to newFather
+      if(lastBigFather.Id == child.Id){
+        _dictionaryDataService.DeleteDictionary(lastBigFather.Id);
+      } else {
+        var lastBigFatherNoRel = toNoRelational(lastBigFather, relList);
+        _dictionaryDataService.UpdateDictionary(lastBigFatherNoRel);
+      }
+    }
+    return true;
+  }
+  private DictionaryNoRel toNoRelational(Dictionary father, List<Dictionary> relList){
+    var list = new List<Dictionary>(relList);
+    var childs = toNoRelationalChilds(father, list);
+    return new DictionaryNoRel(father.Id, father.Name, father.Value, childs);
+  }
+  private string toNoRelationalChilds(Dictionary bigFather, List<Dictionary> relList){
+    var childsRel = relList.FindAll(rel => rel.FatherId == bigFather.Id);
+    relList.RemoveAll(rel => rel.FatherId == bigFather.Id);
+    List<DictionaryNoRel> childsNoRel = new List<DictionaryNoRel>();
+    childsRel.ForEach(child => {
+      var strChilds = toNoRelationalChilds(child, relList);
+      childsNoRel.Add(new DictionaryNoRel(child.Id, child.Name, child.Value, strChilds));
+    });
+    return JsonConvert.SerializeObject(childsNoRel);
+  }
+  // ------
 }
 
 public class MyData
 {
-     public List<DictionaryAlfa> data { get; set; }
+     public List<DictionaryNoRel> data { get; set; }
 }
