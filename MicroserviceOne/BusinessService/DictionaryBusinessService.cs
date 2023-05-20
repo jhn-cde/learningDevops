@@ -5,168 +5,128 @@ namespace MicroserviceOne.BusinessService;
 public class DictionaryBusinessService
 {
   private DictionaryDataService _dictionaryDataService;
-
   public DictionaryBusinessService(DictionaryDataService dictionaryDataService){
     _dictionaryDataService = dictionaryDataService;
   }
 
-  // MAIN ------
   public List<Dictionary> GetDictionaries(){
-    List<DictionaryNoRel> dictionariesNoRel = _dictionaryDataService.GetDictionaries();
-    List<Dictionary> dictionaries = new List<Dictionary>();
-    ConvertToDictionaries(dictionariesNoRel, dictionaries, null);
-    return dictionaries;
+    List<ZTree> treeList = getTreesList();
+    return getDictionaryFromTrees(treeList);
   }
   public Dictionary? GetDictionary(int id){
-    List<DictionaryNoRel> dictionariesNoRel = _dictionaryDataService.GetDictionaries();
-    List<Dictionary> dictionaries = new List<Dictionary>();
-    ConvertToDictionaries(dictionariesNoRel, dictionaries, null);
-    return dictionaries.Find(dic => dic.Id == id);
+    List<ZTree> treesList = getTreesList();
+    List<Dictionary> relList = getDictionaryFromTrees(treesList);
+    return relList.Find(dic => dic.Id == id);
   }
-  public Dictionary InsertDictionary(Dictionary newDictionary){
-    List<DictionaryNoRel> dictionariesNoRel = _dictionaryDataService.GetDictionaries();
-    List<Dictionary> dictionaries = new List<Dictionary>();
-    ConvertToDictionaries(dictionariesNoRel, dictionaries, null);
-    long newId = getNewId(dictionaries);
-    newDictionary.Id = newId;
-
-    var bigFather = getBigFather(dictionaries, newDictionary);
-    if(bigFather.Id == newDictionary.Id){
+  public Dictionary? InsertDictionary(Dictionary newDictionary){
+    List<ZTree> treesList = getTreesList();
+    List<Dictionary> relList = getDictionaryFromTrees(treesList);
+    newDictionary.Id = getNewId(relList);
+    
+    if(newDictionary.FatherId == null){
       _dictionaryDataService.InsertDictionary(
-        new DictionaryNoRel(newDictionary.Id, newDictionary.Name, newDictionary.Value, null)
+        new DictionaryNoRel(newDictionary.Id, newDictionary.Name, newDictionary.Value, "")
       );
-    } else {
-      dictionaries.Add(newDictionary);
-      var bigFatherNoRel = toNoRelational(bigFather, dictionaries);
-      _dictionaryDataService.UpdateDictionary(bigFatherNoRel);
+    }else{
+      List<ZTree> treesToUpdate = new List<ZTree>();
+      treesList.ForEach(tree => {
+        var fatherId = newDictionary.FatherId??-1;
+        bool added = tree.addNode(
+          new ZNode(newDictionary.Id, newDictionary.Name, newDictionary.Value, new List<ZNode>()), 
+          fatherId);
+        if(added) treesToUpdate.Add(tree);
+      });
+
+      treesToUpdate.ForEach(tree => {
+        var noRel = tree.toNoRelational();
+        _dictionaryDataService.UpdateDictionary(noRel);
+      });
     }
+
     return newDictionary;
-  } 
+  }
   public bool UpdateDictionary(Dictionary dictionary){
-    List<DictionaryNoRel> dictionariesNoRel = _dictionaryDataService.GetDictionaries();
-    List<Dictionary> dictionaries = new List<Dictionary>();
-    ConvertToDictionaries(dictionariesNoRel, dictionaries, null);
+    List<ZTree> treesList = getTreesList();
 
-    bool updated = false;
-
-    var oriChildIndex = dictionaries.FindIndex(rel => rel.Id == dictionary.Id);
-    
-    Console.WriteLine($"--- {dictionary.Id}");
-    if(oriChildIndex < 0) return updated;
-    
-    if(dictionaries[oriChildIndex].Name != dictionary.Name || dictionaries[oriChildIndex].Value != dictionary.Value)
-      updated = changeContent(dictionary, oriChildIndex, dictionaries);
-    if(dictionaries[oriChildIndex].FatherId != dictionary.FatherId)
-      updated = changeFather(dictionary, oriChildIndex, dictionaries);
-
-    return updated;
-  }
-  public bool DeleteDictionary(long id){
-    List<DictionaryNoRel> dictionariesNoRel = _dictionaryDataService.GetDictionaries();
-    List<Dictionary> dictionaries = new List<Dictionary>();
-    ConvertToDictionaries(dictionariesNoRel, dictionaries, null);
-    bool deleted = false;
-
-    var bigFatherNoRel = dictionariesNoRel.Find(dic => dic.Id == id);
-    if(bigFatherNoRel != null){
-      deleted = _dictionaryDataService.DeleteDictionary(id); 
-    } else {
-      var dictionary = dictionaries.Find(dic => dic.Id == id);
-      if(dictionary != null){
-        var bigFather = getBigFather(dictionaries, dictionary);
-        var newDictionaries = dictionaries.FindAll(dic => dic.Id != id);
-        bigFatherNoRel = toNoRelational(bigFather, newDictionaries);
-        _dictionaryDataService.UpdateDictionary(bigFatherNoRel);
-        deleted = true;
-      }
-    }
-    return deleted;
-  }
-
-  // EXTRA ------
-  private Dictionary getBigFather(List<Dictionary> relList, Dictionary child){
-    var father = new Dictionary(child);
-    while(father.FatherId != null){
-      var posibBigFather = relList.Find(dic => dic.Id == father.FatherId);
-      if(posibBigFather != null){
-        father = posibBigFather;
-      }
-      else
-        father.FatherId = null;
-    }
-    return father;
-  }
-  // ---
-  private void ConvertToDictionaries(List<DictionaryNoRel> dictionariesNoRel, List<Dictionary> dictionaries, long? fatherId){
-    dictionariesNoRel.ForEach(curDictionary => {
-      dictionaries.Add(new Dictionary(curDictionary.Id, curDictionary.Name, curDictionary.Value, fatherId));
-      var childs = GetChildList(curDictionary);
-      ConvertToDictionaries(childs, dictionaries, curDictionary.Id);
+    ZNode? original = null;
+    ZTree? lastTree = null;
+    ZTree? newTree = null;
+    treesList.ForEach(tree => {
+      original = tree.getNode(dictionary.Id);
+      if(original != null)
+        lastTree = tree;
     });
+    var tmp = original!=null?original.Id:1;
+    
+    if(original != null){
+      var fatherId = dictionary.FatherId??-1;
+      if(original.Name != dictionary.Name || original.Value != dictionary.Value){
+        original.Name = dictionary.Name; original.Value = dictionary.Value;
+        lastTree?.editNode(original);
+      }
+      treesList.ForEach(tree => {
+        if(tree.getNode(fatherId) != null)
+          newTree = tree;
+      });
+      long tmpp = newTree!=null?newTree.Root.Id: -1;
+      
+      if(newTree != null && lastTree != null){
+        original = lastTree.getNode(dictionary.Id);
+        var oriId = original!=null?original.Id:-1;
+        lastTree.removeNode(oriId);
+        if(original!=null)
+          newTree.addNode(original, fatherId);
+      }
+      if(lastTree!=null){
+        var noRel = lastTree.toNoRelational();
+        _dictionaryDataService.UpdateDictionary(noRel);
+      }
+      if(newTree != null && lastTree != null&& newTree.Root.Id != lastTree.Root.Id){
+        var noRel = newTree.toNoRelational();
+        _dictionaryDataService.UpdateDictionary(noRel);
+      }
+    }
+    if(original == null) return false;
+
+    return true;
   }
-  private List<DictionaryNoRel> GetChildList(DictionaryNoRel father){
-    var empty = new List<DictionaryNoRel>();
-    if(father.Childs == null) return empty;
-    var childs = JsonConvert.DeserializeObject<List<DictionaryNoRel>>(father.Childs);
-    return childs == null? empty : childs;
+
+  public bool DeleteDictionary(long id){
+    List<ZTree> treesList = getTreesList();
+    ZTree? treeToUpdate = null;
+    treesList.ForEach(tree => {
+      if(tree.getNode(id) != null)
+        treeToUpdate = tree;
+    });
+    if(treeToUpdate != null){
+      treeToUpdate.removeNode(id);
+      var noRel = treeToUpdate.toNoRelational();
+      _dictionaryDataService.UpdateDictionary(noRel);
+    } else return false;
+    return true;
+  }
+
+  // ------ --- --- --- --- -------
+  // ------ private methods -------
+  // ------ --- --- --- --- -------
+
+  private List<ZTree> getTreesList(){
+    List<DictionaryNoRel> noRelList = _dictionaryDataService.GetDictionaries();
+    
+    List<ZTree> treeList = new List<ZTree>();
+    noRelList.ForEach(noRel => treeList.Add(new ZTree(noRel)));
+    return treeList;
+  }
+  private List<Dictionary> getDictionaryFromTrees(List<ZTree> treesList){
+    List<Dictionary> relList = new List<Dictionary>();
+    treesList.ForEach(tree => {
+      var tmp = tree.toRelational();
+      relList.AddRange(tmp);
+    });
+    return relList;
   }
   private long getNewId(List<Dictionary> dictionaries){
     var maxDicId = dictionaries.MaxBy(dic => dic.Id);
     return maxDicId == null ? 0 : maxDicId.Id+1;
   }
-  // ------
-  private bool changeContent(Dictionary child, int oriChildIndex, List<Dictionary> relList){
-    relList[oriChildIndex].Name = child.Name;
-    relList[oriChildIndex].Value = child.Value;
-    var bigFather = getBigFather(relList, relList[oriChildIndex]);
-    var bigFatherNoRel = toNoRelational(bigFather, relList);
-    _dictionaryDataService.UpdateDictionary(bigFatherNoRel);
-    return true;
-  }
-  private bool changeFather(Dictionary child, int oriChildIndex, List<Dictionary> relList){
-    var lastBigFather = getBigFather(relList, relList[oriChildIndex]);
-    var newBigFather = getBigFather(relList, child);
-    if(newBigFather.Id == child.Id && child.FatherId != null) return false;
-
-    // case 1: last == new
-    // case 2: last != new
-    relList[oriChildIndex] = child;
-    if(lastBigFather.Id == newBigFather.Id){
-      var bigFatherNoRel = toNoRelational(lastBigFather, relList);
-      _dictionaryDataService.UpdateDictionary(bigFatherNoRel);
-    } else{
-      var newBigFatherNoRel = toNoRelational(newBigFather, relList);
-
-      // child's new father is himself, insert new row
-      if(newBigFather.Id == child.Id)
-        _dictionaryDataService.InsertDictionary(newBigFatherNoRel);
-      else
-        _dictionaryDataService.UpdateDictionary(newBigFatherNoRel);
-
-      // child's last father is himself and is already added to newFather
-      if(lastBigFather.Id == child.Id){
-        _dictionaryDataService.DeleteDictionary(lastBigFather.Id);
-      } else {
-        var lastBigFatherNoRel = toNoRelational(lastBigFather, relList);
-        _dictionaryDataService.UpdateDictionary(lastBigFatherNoRel);
-      }
-    }
-    return true;
-  }
-  private DictionaryNoRel toNoRelational(Dictionary father, List<Dictionary> relList){
-    var list = new List<Dictionary>(relList);
-    var childs = toNoRelationalChilds(father, list);
-    return new DictionaryNoRel(father.Id, father.Name, father.Value, childs);
-  }
-  private string toNoRelationalChilds(Dictionary bigFather, List<Dictionary> relList){
-    var childsRel = relList.FindAll(rel => rel.FatherId == bigFather.Id);
-    relList.RemoveAll(rel => rel.FatherId == bigFather.Id);
-    List<DictionaryNoRel> childsNoRel = new List<DictionaryNoRel>();
-    childsRel.ForEach(child => {
-      var strChilds = toNoRelationalChilds(child, relList);
-      childsNoRel.Add(new DictionaryNoRel(child.Id, child.Name, child.Value, strChilds));
-    });
-    return JsonConvert.SerializeObject(childsNoRel);
-  }
-  // ------
 }

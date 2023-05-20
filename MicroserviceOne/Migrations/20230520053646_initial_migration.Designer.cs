@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MicroserviceOne.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20230516200014_n_migration")]
-    partial class n_migration
+    [Migration("20230520053646_initial_migration")]
+    partial class initial_migration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,13 +21,14 @@ namespace MicroserviceOne.Migrations
                 .HasAnnotation("ProductVersion", "7.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("MicroserviceOne.DictionaryAlfa", b =>
+            modelBuilder.Entity("MicroserviceOne.DictionaryNoRel", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
                     b.Property<string>("Childs")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Name")

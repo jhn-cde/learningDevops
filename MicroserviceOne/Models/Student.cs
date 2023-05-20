@@ -9,5 +9,11 @@ namespace MicroserviceOne
     public string FirstName {get; set;}
     public string LastName {get; set;}
     public ICollection<StudentCourse>? StudentCourses {get; set;}
+
+    public Student(){
+      Id = 0;
+      FirstName = "";
+      LastName = "";
+    }
   }
 }

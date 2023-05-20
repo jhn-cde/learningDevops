@@ -16,13 +16,13 @@ public class DictionaryController: ControllerBase
   public List<Dictionary> GetDictionaries(){
     return _dictionaryBusinessService.GetDictionaries();
   }
+  [HttpPost]
+  public Dictionary? InsertDictionary(Dictionary dictionary){
+    return _dictionaryBusinessService.InsertDictionary(dictionary);
+  }
   [HttpGet("{id:int}")]
   public Dictionary? GetDictionary(int id){
     return _dictionaryBusinessService.GetDictionary(id);
-  }
-  [HttpPost]
-  public Dictionary InsertDictionary(Dictionary dictionary){
-    return _dictionaryBusinessService.InsertDictionary(dictionary);
   }
   [HttpPut("{id:int}")]
   public bool UpdateDictionary(int id, Dictionary dictionary){

@@ -6,7 +6,7 @@ using MySql.EntityFrameworkCore.Metadata;
 namespace MicroserviceOne.Migrations
 {
     /// <inheritdoc />
-    public partial class n_migration : Migration
+    public partial class initial_migration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -22,7 +22,7 @@ namespace MicroserviceOne.Migrations
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(type: "longtext", nullable: false),
                     Value = table.Column<string>(type: "longtext", nullable: false),
-                    Childs = table.Column<string>(type: "longtext", nullable: true)
+                    Childs = table.Column<string>(type: "longtext", nullable: false)
                 },
                 constraints: table =>
                 {

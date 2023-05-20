@@ -11,5 +11,10 @@ namespace MicroserviceOne
     public long StudentId {get; set;}
     [ForeignKey(nameof(StudentId))]
     public Student? Student {get; set;}
+
+    public StudentCourse(){
+      Id = 0;
+      CourseName = ""; 
+    } 
   }
 }
