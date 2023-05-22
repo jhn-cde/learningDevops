@@ -4,7 +4,7 @@ using MicroserviceOne.BusinessService;
 
 namespace MicroserviceOne.Controllers;
 [ApiController]
-[Route("api/[controller]")]
+[Route("mysqlapi/[controller]")]
 public class StudentCourseController: ControllerBase
 {
   private StudentCourseBusinessService _studentCourseBusinessService;
