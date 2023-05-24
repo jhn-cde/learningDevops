@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MicroserviceOne.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20230520053646_initial_migration")]
+    [Migration("20230524195651_initial_migration")]
     partial class initial_migration
     {
         /// <inheritdoc />

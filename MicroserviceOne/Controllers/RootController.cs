@@ -17,8 +17,8 @@ public class RootController: ControllerBase
   public string GetDictionaries(){
     
     var builder = WebApplication.CreateBuilder();
-    var host = builder.Configuration["DBHOST"] ?? "localhost";
-    var port = builder.Configuration["DBPORT"] ?? "3307";
+    var host = builder.Configuration["DBHOST"] ?? builder.Configuration.GetConnectionString("DBHOST");
+    var port = builder.Configuration["DBPORT"] ?? builder.Configuration.GetConnectionString("DBPORT");
     var password = builder.Configuration["MYSQL_PASSWORD"] ?? builder.Configuration.GetConnectionString("MYSQL_PASSWORD");
     var userid = builder.Configuration["MYSQL_USER"] ?? builder.Configuration.GetConnectionString("MYSQL_USER");
     var userDB = builder.Configuration["MYSQL_DATABASE"] ?? builder.Configuration.GetConnectionString("MYSQL_DATABASE");
@@ -30,17 +30,8 @@ public class RootController: ControllerBase
       mySqlConnection.Open();
       var mySqlCommand = new MySqlCommand("show databases;", mySqlConnection);
       var mySqlReader = mySqlCommand.ExecuteReader();
-      var mySqlDatabases = "";
-      while (mySqlReader.Read())
-      {
-        //mySqlDatabases += mySqlReader.GetString(0) + ",";
-        string row = "";
-        for (int i = 0; i < mySqlReader.FieldCount; i++)
-          row += mySqlReader.GetValue(i).ToString() + ", ";
-        mySqlDatabases += row;         
-      }
       mySqlConnection.Close();
-      return "Hello World, API is working!\nDatabases: " + mySqlDatabases; 
+      return "Hello World, connection to the db is working!"; 
     }
     catch (Exception err)
     {
