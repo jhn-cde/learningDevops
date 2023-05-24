@@ -1,60 +1,80 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mysqlapi
+  name: webapi
+  labels:
+    app: school-system
+    tier: backend
 spec:
   selector:
     matchLabels:
-      app: mysqlapi
+      tier: backend
   replicas: 1
   template:
     metadata:
       labels:
-        app: mysqlapi
+        app: school-system
+        tier: backend
     spec:
       containers:
-        - name: mysqlapi
-          image: jhncde/school-api:2.0.1
+        - name: webapi
+          image: jhncde/school-api:3.0.0
           ports:
             - containerPort: 80
           env:
             - name: DBHOST
-              value: "mysql"
+              value: mysql-db
             - name: DBPORT
               value: "3306"
             - name: MYSQL_DATABASE
-              value: "school"
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-db-url
+                  key: database
             - name: MYSQL_USER
-              value: "root"
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: username
             - name: MYSQL_PASSWORD
-              value: "password"
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: password
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mysqlapi
+  name: webapi
+  labels:
+    app: school-system
+    tier: backend
 spec:
   selector:
-    app: mysqlapi
+    tier: backend
   ports:
-  - port: 80
+    - port: 80
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: myapp-deployment
+  name: webapp
+  labels:
+    app: school-system
+    tier: frontend
 spec:
   selector:
     matchLabels:
-      app: myapp-pod
+      tier: frontend
   replicas: 1
   template:
     metadata:
       labels:
-        app: myapp-pod
+        app: school-system
+        tier: frontend
     spec:
       containers:
-        - name: myapp-container
+        - name: webapp
           image: jhncde/school-app:2.0.0
           ports:
             - containerPort: 80
@@ -63,9 +83,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: myapp-service
+  name: webapp
+  labels:
+    app: school-system
+    tier: frontend
 spec:
   selector:
-    app: myapp-pod
+    tier: frontend
   ports:
   - port: 80

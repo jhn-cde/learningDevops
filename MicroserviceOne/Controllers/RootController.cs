@@ -40,11 +40,11 @@ public class RootController: ControllerBase
         mySqlDatabases += row;         
       }
       mySqlConnection.Close();
-      return "Hello World, API is working!\nDatabases: " + mySqlDatabases +"\nconnStr: " + connString; 
+      return "Hello World, API is working!\nDatabases: " + mySqlDatabases; 
     }
-    catch (System.Exception ex)
+    catch (Exception err)
     {
-      return "Error! connecting the database, RootController"+"\nconnStr: " + connString;
+      return "Error! connecting the database, RootController"+"\n" + err.Message;
     }
   }
 }

@@ -10,14 +10,14 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: mysqlapi
+            name: webapi
             port:
               number: 80
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: myapp-service
+            name: webapp
             port:
               number: 80
       
