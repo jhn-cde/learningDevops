@@ -2,24 +2,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mysql-db
+  name: mysql-deployment
   labels:
-    app: school-system
-    tier: school-db
+    tier: db
 spec:
   replicas: 1
   selector:
     matchLabels:
-      tier: school-db
+      tier: db
+  strategy:
+    type: Recreate
   template:
     metadata:
+      name: mysql
       labels:
-        app: school-system
-        tier: school-db
+        tier: db
     spec:
       containers:
       - image: mysql:8
-        name: mysql-db
+        name: mysql
         env:
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
@@ -54,15 +55,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mysql-db
+  name: mysql-service
   labels:
-    app: school-system
-    tier: school-db
+    tier: db
 spec:
-  type: LoadBalancer
   selector:
-    tier: school-db
+    tier: db
   ports:
     - port: 3306
-      protocol: TCP
-      targetPort: 3306

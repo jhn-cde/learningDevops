@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-deployment
+  labels:
+    app: school-system
+    tier: frontend
+spec:
+  selector:
+    matchLabels:
+      app: school-system
+      tier: frontend
+  replicas: 1
+  template:
+    metadata:
+      name: webapp-pod
+      labels:
+        app: school-system
+        tier: frontend
+    spec:
+      containers:
+        - name: webapp
+          image: jhncde/school-app:4.0.0
+          ports:
+            - containerPort: 80
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-service
+  labels:
+    app: school-system
+    tier: frontend
+spec:
+  selector:
+    app: school-system
+    tier: frontend
+  ports:
+  - port: 80

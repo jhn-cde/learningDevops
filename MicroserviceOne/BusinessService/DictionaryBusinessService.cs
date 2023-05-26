@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using MicroserviceOne.DataService;
 
 namespace MicroserviceOne.BusinessService;
@@ -9,14 +8,15 @@ public class DictionaryBusinessService
     _dictionaryDataService = dictionaryDataService;
   }
 
-  public List<Dictionary> GetDictionaries(){
+  public List<DictionaryNoRel> GetDictionaries(){
     List<ZTree> treeList = getTreesList();
     return getDictionaryFromTrees(treeList);
   }
+  /*
   public Dictionary? GetDictionary(int id){
     List<ZTree> treesList = getTreesList();
     List<Dictionary> relList = getDictionaryFromTrees(treesList);
-    return relList.Find(dic => dic.Id == id);
+    return null;
   }
   public Dictionary? InsertDictionary(Dictionary newDictionary){
     List<ZTree> treesList = getTreesList();
@@ -108,7 +108,7 @@ public class DictionaryBusinessService
 
   // ------ --- --- --- --- -------
   // ------ private methods -------
-  // ------ --- --- --- --- -------
+  // ------ --- --- --- --- -------*/
 
   private List<ZTree> getTreesList(){
     List<DictionaryNoRel> noRelList = _dictionaryDataService.GetDictionaries();
@@ -117,11 +117,11 @@ public class DictionaryBusinessService
     noRelList.ForEach(noRel => treeList.Add(new ZTree(noRel)));
     return treeList;
   }
-  private List<Dictionary> getDictionaryFromTrees(List<ZTree> treesList){
-    List<Dictionary> relList = new List<Dictionary>();
+  private List<DictionaryNoRel> getDictionaryFromTrees(List<ZTree> treesList){
+    List<DictionaryNoRel> relList = new List<DictionaryNoRel>();
     treesList.ForEach(tree => {
-      var tmp = tree.toRelational();
-      relList.AddRange(tmp);
+      var tmp = tree.toNoRelational();
+      relList.Add(tmp);
     });
     return relList;
   }

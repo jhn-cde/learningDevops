@@ -1,29 +1,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: webapi
+  name: webapi-deployment
   labels:
     app: school-system
     tier: backend
 spec:
   selector:
     matchLabels:
+      app: school-system
       tier: backend
   replicas: 1
   template:
     metadata:
+      name: webapi-pod
       labels:
         app: school-system
         tier: backend
     spec:
       containers:
         - name: webapi
-          image: jhncde/school-api:3.0.0
+          image: jhncde/school-api:3.0.1
           ports:
             - containerPort: 80
           env:
             - name: DBHOST
-              value: mysql-db
+              value: mysql-service
             - name: DBPORT
               value: "3306"
             - name: MYSQL_DATABASE
@@ -45,50 +47,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: webapi
+  name: webapi-service
   labels:
     app: school-system
     tier: backend
 spec:
   selector:
+    app: school-system
     tier: backend
   ports:
     - port: 80
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: webapp
-  labels:
-    app: school-system
-    tier: frontend
-spec:
-  selector:
-    matchLabels:
-      tier: frontend
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: school-system
-        tier: frontend
-    spec:
-      containers:
-        - name: webapp
-          image: jhncde/school-app:2.0.0
-          ports:
-            - containerPort: 80
-              protocol: TCP
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: webapp
-  labels:
-    app: school-system
-    tier: frontend
-spec:
-  selector:
-    tier: frontend
-  ports:
-  - port: 80

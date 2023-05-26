@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logicapp-deployment
+  labels:
+    app: logic-system
+    tier: frontend
+spec:
+  selector:
+    matchLabels:
+      app: logic-system
+      tier: frontend
+  replicas: 1
+  template:
+    metadata:
+      name: logicapp-pod
+      labels:
+        app: logic-system
+        tier: frontend
+    spec:
+      containers:
+        - name: logicapp
+          image: jhncde/microapp:3.1.5
+          ports:
+            - containerPort: 80
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logicapp-service
+  labels:
+    app: logic-system
+    tier: frontend
+spec:
+  selector:
+    tier: frontend
+    app: logic-system
+  ports:
+  - port: 80

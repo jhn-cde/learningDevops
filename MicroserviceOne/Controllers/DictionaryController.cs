@@ -13,9 +13,9 @@ public class DictionaryController: ControllerBase
   }
 
   [HttpGet]
-  public List<Dictionary> GetDictionaries(){
+  public List<DictionaryNoRel> GetDictionaries(){
     return _dictionaryBusinessService.GetDictionaries();
-  }
+  }/*
   [HttpPost]
   public Dictionary? InsertDictionary(Dictionary dictionary){
     return _dictionaryBusinessService.InsertDictionary(dictionary);
@@ -32,5 +32,5 @@ public class DictionaryController: ControllerBase
   [HttpDelete("{id:int}")]
   public bool DeleteDictionary(int id){
     return _dictionaryBusinessService.DeleteDictionary(id);
-  }
+  }*/
 }

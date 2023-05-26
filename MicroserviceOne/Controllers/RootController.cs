@@ -35,7 +35,7 @@ public class RootController: ControllerBase
     }
     catch (Exception err)
     {
-      return "Error! connecting the database, RootController"+"\n" + err.Message;
+      return "Error! connecting the database, RootController"+"\n" + err.Message + "\n" + connString;
     }
   }
 }

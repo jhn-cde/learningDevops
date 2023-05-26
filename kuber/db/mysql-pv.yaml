@@ -7,11 +7,11 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 1Gi
+    storage: 500Mi
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/var/lib/mysql"
+    path: "/mnt/dataa"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -23,5 +23,5 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: 500Mi
 ---
