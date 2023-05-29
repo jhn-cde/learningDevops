@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MicroserviceOne.Controllers;
 [ApiController]
-[Route("mysqlapi")]
+[Route("schoolapi")]
 public class RootController: ControllerBase
 {
   public RootController(){

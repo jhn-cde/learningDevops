@@ -14,7 +14,6 @@ public class DictionaryDataService
   }
   public List<Dictionary> Get(){
     var tmp = _context.Dictionaries.ToList();
-    Console.WriteLine(tmp.Count());
     return tmp;
   }
   public Dictionary Insert(Dictionary dictionary){

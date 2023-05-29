@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontapp-deployment
+  labels:
+    app: frontapp
+    tier: frontend
+spec:
+  selector:
+    matchLabels:
+      app: frontapp
+      tier: frontend
+  replicas: 1
+  template:
+    metadata:
+      name: frontapp-pod
+      labels:
+        app: frontapp
+        tier: frontend
+    spec:
+      containers:
+        - name: frontapp
+          image: jhncde/frontapp:1.2.0
+          ports:
+            - containerPort: 80
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontapp-service
+  labels:
+    app: frontapp
+    tier: frontend
+spec:
+  selector:
+    app: frontapp
+    tier: frontend
+  ports:
+  - port: 80

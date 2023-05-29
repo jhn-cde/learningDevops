@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: api-ingress
+  name: schoolapi-ingress
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     nginx.ingress.kubernetes.io/use-regex: "true"
@@ -10,18 +10,18 @@ spec:
   rules:
   - http:
       paths:
-      - path: /mysqlapi
+      - path: /schoolapi
         pathType: Prefix
         backend:
           service:
-            name: webapi-service
+            name: schoolapi-service
             port:
               number: 80
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: app-ingress
+  name: logicapi-ingress
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     nginx.ingress.kubernetes.io/use-regex: "true"
@@ -30,18 +30,18 @@ spec:
   rules:
   - http:
       paths:
-      - path: /school
+      - path: /logicapi
         pathType: Prefix
         backend:
           service:
-            name: webapp-service
+            name: logicapi-service
             port:
               number: 80
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: logic-ingress
+  name: frontapp-ingress
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     nginx.ingress.kubernetes.io/use-regex: "true"
@@ -54,6 +54,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: logicapp-service
+            name: frontapp-service
             port:
               number: 80

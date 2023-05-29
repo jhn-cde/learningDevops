@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: schoolapi-deployment
+  labels:
+    app: schoolapi
+    tier: backend
+spec:
+  selector:
+    matchLabels:
+      app: schoolapi
+      tier: backend
+  replicas: 1
+  template:
+    metadata:
+      name: schoolapi
+      labels:
+        app: schoolapi
+        tier: backend
+    spec:
+      containers:
+        - name: webapi
+          image: jhncde/schoolapi:0.1.0
+          ports:
+            - containerPort: 80
+          env:
+            - name: DBHOST
+              value: mysql-service
+            - name: DBPORT
+              value: "3306"
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-db-url
+                  key: database
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: username
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: schoolapi-service
+  labels:
+    app: schoolapi
+    tier: backend
+spec:
+  selector:
+    app: schoolapi
+    tier: backend
+  ports:
+    - port: 80

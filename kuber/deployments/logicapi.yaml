@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logicapi-deployment
+  labels:
+    app: logicapi
+    tier: backend
+spec:
+  selector:
+    matchLabels:
+      app: logicapi
+      tier: backend
+  replicas: 1
+  template:
+    metadata:
+      name: logicapi
+      labels:
+        app: logicapi
+        tier: backend
+    spec:
+      containers:
+        - name: logicapi
+          image: jhncde/logicapi:0.1.0
+          ports:
+            - containerPort: 80
+          env:
+            - name: DBHOST
+              value: mysql-service
+            - name: DBPORT
+              value: "3306"
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-db-url
+                  key: database
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: username
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logicapi-service
+  labels:
+    app: logicapi
+    tier: backend
+spec:
+  selector:
+    app: logicapi
+    tier: backend
+  ports:
+  - port: 80
