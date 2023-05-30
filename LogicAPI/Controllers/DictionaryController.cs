@@ -29,4 +29,10 @@ public class DictionaryController : ControllerBase
     {
         return _dictionaryBS.Insert(dictionaryRel);
     }
+    [HttpPost("Update/{id}")]
+    public DictionaryNoRel? Update(long id, DictionaryRel dictionaryRel)
+    {
+        dictionaryRel.Id = id;
+        return _dictionaryBS.Update(dictionaryRel);
+    }
 }

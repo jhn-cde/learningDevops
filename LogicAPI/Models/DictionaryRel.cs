@@ -14,7 +14,7 @@ namespace LogicAPI
       Id = -1;
       Name = "";
       Value = "";
-      FatherId = -1;
+      FatherId = null;
     }
     public DictionaryRel(long id, string name, string value, long? fatherId){
       Id = id;

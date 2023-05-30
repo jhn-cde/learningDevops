@@ -19,7 +19,7 @@ public class DictionaryBusinessService
     var jsonString_trees = _dictionaryDS.Get();
     var trees = new List<DictionaryNoRel>();
     jsonString_trees.ForEach(tree => {
-      trees.Add(ProcessJsonString(tree, (_)=>false, (_) => {}));
+      trees.Add(ProcessJsonString(tree, (_,_) => {}));
     });
 
     return trees;
@@ -34,13 +34,10 @@ public class DictionaryBusinessService
     jsonString_trees.ForEach( tree => {
       var bigFather = ProcessJsonString(
         tree,
-        father => {
-          // get a validId
+        (father, _) => {
           if(father.Id == validId) validId++;
-          return father.Id == dRel.FatherId;
-        },
-        (father) => {
-          toInsert = new DictionaryNoRel(dRel.Id, dRel.Name, dRel.Value, new List<DictionaryNoRel>());
+          if(father.Id == dRel.FatherId)
+            toInsert = new DictionaryNoRel(dRel.Id, dRel.Name, dRel.Value, new List<DictionaryNoRel>());
         }
       );
       if(toInsert != null) {
@@ -52,10 +49,8 @@ public class DictionaryBusinessService
     if(toInsert != null && toUpdate != null){
       toInsert.Id = validId;
       var bigFatherProcess = ProcessDictionaryNoRel(toUpdate,
-        father => {
-          return father.Id == dRel.FatherId;
-        },
         (father) => {
+          if(father.Id == dRel.FatherId)
           father.Childs.Add(toInsert);
         }
       );
@@ -66,37 +61,87 @@ public class DictionaryBusinessService
     if(toInsert == null && dRel.FatherId == null){
       var to_insert = new Dictionary(validId, dRel.Name, dRel.Value, ConvertToJsonString(new List<Dictionary>()));
       var tmp = _dictionaryDS.Insert(to_insert);
-      toInsert = ProcessJsonString(tmp, (_)=>false, (_)=>{});
+      toInsert = ProcessJsonString(tmp, (_,_)=>{});
     }
     return toInsert;
   }
 
+  public DictionaryNoRel Update(DictionaryRel dRel){
+    var jsonString_trees = _dictionaryDS.Get();
+    DictionaryNoRel? toInsert = null;
+    DictionaryNoRel? lastBigFather = null;
+    DictionaryNoRel? newBigFather = null;
+    long? lastFatherId = -1;
+    long? curFatherId = -1;
+
+    jsonString_trees.ForEach( tree => {
+      bool isCurBigFather = false;
+      var bigFather = ProcessJsonString(
+        tree,
+        (node, fatherId) => {
+          if(node.Id == dRel.Id)
+          {
+            node.Name = dRel.Name; node.Value = dRel.Value;
+            // default
+            if(fatherId == dRel.FatherId) isCurBigFather = true;
+            // if father changed, need to update last father
+            if(fatherId != dRel.FatherId) lastFatherId = fatherId; 
+          }
+          // search curFather
+          if(node.Id == dRel.FatherId) isCurBigFather = true;
+        }
+      );
+      if(lastFatherId != null) lastBigFather = bigFather;
+      if(isCurBigFather) newBigFather = bigFather;
+    });
+    
+    toInsert = new DictionaryNoRel(dRel.Id, dRel.Name, dRel.Value, new List<DictionaryNoRel>());
+    /*
+    if(lastBigFather != null && lastBigFather.Id != newBigFather.Id){
+      var bigFatherProcess = ProcessDictionaryNoRel(lastBigFather,
+        (father) => {
+          if(father.Id == dRel.FatherId)
+            father.Childs.Add(toInsert);
+        }
+      );
+      _dictionaryDS.Update(bigFatherProcess);
+    }
+
+    // dictionary doesnt have father
+    if(toInsert == null && dRel.FatherId == null){
+      var to_insert = new Dictionary(dRel.Id, dRel.Name, dRel.Value, ConvertToJsonString(new List<Dictionary>()));
+      var tmp = _dictionaryDS.Insert(to_insert);
+      toInsert = ProcessJsonString(tmp, (_,_)=>{});
+    }*/
+
+    return new DictionaryNoRel();
+  }
+
   // ---
-  private DictionaryNoRel ProcessJsonString(Dictionary father, Func<Dictionary, bool> condition, Action<Dictionary> action){
-    var process_father = new DictionaryNoRel(father.Id, father.Name, father.Value, new List<DictionaryNoRel>());
+  private DictionaryNoRel ProcessJsonString(Dictionary node, Action<DictionaryNoRel, long?> action, long? fatherId = null){
+    var process_father = new DictionaryNoRel(node.Id, node.Name, node.Value, new List<DictionaryNoRel>());
 
     var childs = new List<Dictionary>();
-    var tmp_childs = JsonSerializer.Deserialize<List<Dictionary>>(father.Childs);
+    var tmp_childs = JsonSerializer.Deserialize<List<Dictionary>>(node.Childs);
 
     if(tmp_childs == null) return process_father;
     
-    if(condition(father)) action(father);
+    action(process_father, fatherId);
 
     tmp_childs.ForEach(child => {
-      var child_process = ProcessJsonString(child, condition, action);
+      var child_process = ProcessJsonString(child, action, node.Id);
       process_father.Childs.Add(child_process);
     });
 
-    father.Childs = ConvertToJsonString(childs);
     return process_father;
   }
 
-  private Dictionary ProcessDictionaryNoRel(DictionaryNoRel dNoRel, Func<DictionaryNoRel, bool> condition, Action<DictionaryNoRel> action){
+  private Dictionary ProcessDictionaryNoRel(DictionaryNoRel dNoRel, Action<DictionaryNoRel> action){
     List<Dictionary> childs = new List<Dictionary>();
-    if(condition(dNoRel)) action(dNoRel);    
+    action(dNoRel);    
 
     dNoRel.Childs.ForEach( child =>{
-      var child_process = ProcessDictionaryNoRel(child, condition, action);
+      var child_process = ProcessDictionaryNoRel(child, action);
       childs.Add(child_process);
     }); 
     return new Dictionary(dNoRel.Id, dNoRel.Name, dNoRel.Value, ConvertToJsonString(childs));
