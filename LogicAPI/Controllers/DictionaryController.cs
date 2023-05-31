@@ -25,7 +25,7 @@ public class DictionaryController : ControllerBase
         return _dictionaryBS.Get();
     }
     [HttpPost("Insert")]
-    public DictionaryNoRel? Insert(DictionaryRel dictionaryRel)
+    public DictionaryRel? Insert(DictionaryRel dictionaryRel)
     {
         return _dictionaryBS.Insert(dictionaryRel);
     }
