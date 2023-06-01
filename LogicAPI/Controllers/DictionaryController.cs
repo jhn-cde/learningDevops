@@ -35,4 +35,9 @@ public class DictionaryController : ControllerBase
         dictionaryRel.Id = id;
         return _dictionaryBS.Update(dictionaryRel);
     }
+    [HttpPost("Delete/{id}")]
+    public bool Delete(long id)
+    {
+        return _dictionaryBS.Delete(id);
+    }
 }

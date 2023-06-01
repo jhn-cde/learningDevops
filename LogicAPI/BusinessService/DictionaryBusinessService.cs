@@ -66,8 +66,6 @@ public class DictionaryBusinessService
   }
 
   public DictionaryNoRel? Update(DictionaryRel dRel){
-    bool nodeFound = false;
-
     var jsonString_trees = _dictionaryDS.Get();
     DictionaryNoRel? toInsert = null;
     DictionaryNoRel? lastBigFather = null;
@@ -76,35 +74,29 @@ public class DictionaryBusinessService
     long? curFatherId = -1;
 
     jsonString_trees.ForEach( tree => {
-      bool isCurBigFather = false;
-      bool isLastBigFather = false;
+      bool isLastBigFather = false; bool isCurBigFather = false; 
       var bigFather = ProcessJsonString(
         tree,
-        (node, fatherId) => {
-          if(node.Id == dRel.Id)
-          {
-            nodeFound = true;
-            node.Name = dRel.Name; node.Value = dRel.Value;
-            if(fatherId == dRel.FatherId) isCurBigFather = true;
-            // if father changed, need to update last father
-            if(fatherId != dRel.FatherId) {
-              lastFatherId = fatherId;
-              isLastBigFather = true;
-            }
-          }
-          // search curFather
-          if(node.Id == dRel.FatherId) {
-            isCurBigFather = true;
-            curFatherId = dRel.FatherId;
-          }
-        },
+        (_,_)=>{},
         (node, fatherId)=>{
           if(node.Id == dRel.Id){
-            toInsert = node;
-          };
+            node.Name = dRel.Name; node.Value = dRel.Value;
+            if((node.Name != dRel.Name || node.Value != dRel.Value) && fatherId == dRel.FatherId){
+              isCurBigFather = true;
+            }
+            if(fatherId != dRel.FatherId){
+              isLastBigFather = true;
+              lastFatherId = fatherId;
+              toInsert = node;
+            }
+          }
+          if(node.Id == dRel.FatherId){
+            isCurBigFather = true;
+            curFatherId = node.Id;
+          }
         }
       );
-      if(lastFatherId > -1 && isLastBigFather) lastBigFather = bigFather;
+      if(isLastBigFather) lastBigFather = bigFather;
       if(isCurBigFather) curBigFather = bigFather;
     });
     
@@ -114,40 +106,95 @@ public class DictionaryBusinessService
       _dictionaryDS.Update(bigFatherProcess);
     }
     // change father
-    if(curBigFather != null && lastBigFather != null && toInsert != null){
-    Console.WriteLine($"- {lastFatherId} - {curFatherId}");
-    Console.WriteLine($"- {curBigFather.Id} - {lastBigFather.Id}");
-      // changes within the same bigfather
-      if(curBigFather.Id == lastBigFather.Id){
-        var bigFatherProcess = ProcessDictionaryNoRel(curBigFather, (father) => {
-          if (father.Id == lastFatherId){
+    if(lastBigFather != null && toInsert != null){
+      // 1. child to new bigfather
+      if(dRel.FatherId == null){
+        Console.WriteLine("Case 1");
+        var bigFatherProcess = ProcessDictionaryNoRel(lastBigFather, (father) => {
+          if (father.Id == lastFatherId)
             father.Childs.RemoveAll(item => item.Id == dRel.Id);
-          }
-          if (father.Id == curFatherId){
-            father.Childs.Add(toInsert);
-          }
         }, (_) => {});
         _dictionaryDS.Update(bigFatherProcess);
+        _dictionaryDS.Insert(ProcessDictionaryNoRel(toInsert,(_)=>{},(_)=>{}));
       }
-      // changes occurs in different bigfathers 
-      else {
-        var curFatherProcess = ProcessDictionaryNoRel(lastBigFather, (father) => {
-          if(father.Id == curFatherId) father.Childs.Add(toInsert);
-        }, (_) => {});
-        _dictionaryDS.Update(curFatherProcess);
-        if(lastBigFather.Id == dRel.Id){
-          _dictionaryDS.Delete(dRel.Id);
-        }
-        else{
-          var lastFatherProcess = ProcessDictionaryNoRel(lastBigFather, (father) => {
-            if(father.Id == lastFatherId) father.Childs.RemoveAll(item => item.Id == dRel.Id);
-          }, (_) => {});
-          _dictionaryDS.Update(lastFatherProcess);
-        }
+      // 2. change childs big father
+      else if(curBigFather != null && curBigFather.Id != lastBigFather.Id && lastFatherId != null){
+        Console.WriteLine("Case 2");
+        var lastBigFatherProcess = ProcessDictionaryNoRel(lastBigFather, (father)=> {
+          if(father.Id == lastFatherId)
+            father.Childs.RemoveAll(item => item.Id == dRel.Id);
+        },(_)=>{});
+        _dictionaryDS.Update(lastBigFatherProcess);
+        var curBigFatherProcess = ProcessDictionaryNoRel(curBigFather, (father)=> {
+          if(father.Id == curFatherId)
+            father.Childs.Add(toInsert);
+        },(_)=>{});
+        _dictionaryDS.Update(curBigFatherProcess);
+      }
+      // 3. transform bigfather to child of other bigfather
+      else if(lastBigFather.Id == dRel.Id && curBigFather != null && curBigFather.Id != lastBigFather.Id){
+        Console.WriteLine("Case 3");
+        _dictionaryDS.Delete(dRel.Id);
+        var curBigFatherProcess = ProcessDictionaryNoRel(curBigFather, (father)=> {
+          if(father.Id == curFatherId){
+            father.Childs.Add(toInsert);
+          }
+        },(_)=>{});
+        _dictionaryDS.Update(curBigFatherProcess);
+      }
+      // 4. Change childs father but not bigfather (same tree)
+      else if(curBigFather != null && curBigFather.Id == lastBigFather.Id){
+        Console.WriteLine("Case 4");
+        var curBigFatherProcess = ProcessDictionaryNoRel(curBigFather, (father)=> {
+          if(father.Id == lastFatherId)
+            father.Childs.RemoveAll(item => item.Id == dRel.Id);
+          if(father.Id == curFatherId)
+            father.Childs.Add(toInsert);
+        },(_)=>{});
+        _dictionaryDS.Update(curBigFatherProcess);
       }
     }
 
     return toInsert;
+  }
+
+  public bool Delete(long id){
+    var jsonString_trees = _dictionaryDS.Get();
+    bool done = false;
+    long? fatherId = null;
+    DictionaryNoRel? bigFather = null;
+
+    jsonString_trees.ForEach( tree => {
+      bool isCurTree = false;
+      var bFather = ProcessJsonString(
+        tree,
+        (_,_) => { },
+        (node, fId)=>{
+          if(node.Id == id){
+            fatherId = fId;
+            isCurTree = true;
+          }
+        }
+      );
+      if(isCurTree) bigFather = bFather; 
+    });
+    if(bigFather != null){
+      // 1. delete bigfather
+      if(fatherId == null && id == bigFather.Id) {
+        _dictionaryDS.Delete(id);
+        done = true;
+      }
+      // 2. delete child
+      if(fatherId != null){
+        var bigFatherProcess = ProcessDictionaryNoRel(bigFather, (father)=> {
+          if(father.Id == fatherId)
+            father.Childs.RemoveAll(item => item.Id == id);
+        },(_)=>{});
+        _dictionaryDS.Update(bigFatherProcess);
+        done = true;
+      }
+    }
+    return done;
   }
 
   // ---
