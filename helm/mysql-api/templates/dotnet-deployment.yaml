@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-dotnet-deployment
+  labels:
+    app: {{ .Release.Name }}-api
+    tier: backend
+spec:
+  replicas: {{ .Values.dotnetReplicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-api
+      tier: backend
+  template:
+    metadata:
+      name: {{ .Release.Name }}-dotnet
+      labels:
+        app: {{ .Release.Name }}-api
+        tier: backend
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.dotnetImage.repository }}:{{ .Values.dotnetImage.tag }}"
+          ports:
+            - containerPort: 80
+          env:
+          - name: DBHOST
+            value: {{ .Release.Name }}-mysql-service
+          - name: DBPORT
+            value: "{{ .Values.mysqlService.port }}"
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-mysql-db-url
+                key: database
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-mysql-user-pass
+                key: username
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-mysql-user-pass
+                key: password

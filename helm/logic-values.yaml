@@ -1,0 +1,21 @@
+# pvc ---
+pv:
+  path: /mnt/data/logic
+# dotnet ----
+# - deployment
+dotnetReplicaCount: 1
+dotnetImage:
+  repository: jhncde/logicapi
+  tag: "0.1.0"
+# - service
+dotnetService:
+  type: ClusterIP
+  port: 80
+
+# - ingress
+ingress:
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+  path: /logicapi
+  pathType: Prefix

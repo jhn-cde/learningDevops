@@ -1,0 +1,15 @@
+# pvc ---
+pv:
+  path: /mnt/data/school
+# dotnet ----
+# - deployment
+dotnetImage:
+  repository: jhncde/schoolapi
+  tag: "0.1.0"
+# - ingress
+ingress:
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+  path: /schoolapi
+  pathType: Prefix

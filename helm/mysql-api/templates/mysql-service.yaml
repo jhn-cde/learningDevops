@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-mysql-service
+  labels:
+    app: {{ .Release.Name }}-api
+    tier: db
+spec:
+  selector:
+    app: {{ .Release.Name }}-api
+    tier: db
+  ports:
+    - port: {{ .Values.mysqlService.port }}

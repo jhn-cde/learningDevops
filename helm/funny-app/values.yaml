@@ -1,0 +1,16 @@
+replicaCount: 1
+
+image:
+  repository: jhncde/frontapp
+  tag: "1.2.0"
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+  path: /
+  pathType: Prefix

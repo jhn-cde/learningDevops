@@ -1,0 +1,39 @@
+# pvc ---
+pv:
+  path: /mnt/data
+# mysql ----
+# - secrets
+secrets:
+  mysqlRootPass: dG9vcg==
+  mysqlUserName: dXNlcg==
+  mysqlUserPass: cGFzc3dvcmQ=
+  mysqlDb: ZGI=
+# - deployment
+mysqlReplicaCount: 1
+mysqlImage:
+  repository: mysql
+  tag: "8"
+# - service
+mysqlService:
+  type: ClusterIP
+  port: 3306
+
+# dotnet ----
+# - deployment
+dotnetReplicaCount: 1
+dotnetImage:
+  repository: jhncde/schoolapi
+  tag: "0.1.0"
+
+# - service
+dotnetService:
+  type: ClusterIP
+  port: 80
+
+# - ingress
+ingress:
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+  path: /
+  pathType: Prefix
