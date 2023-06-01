@@ -10,6 +10,5 @@ namespace MicroserviceOne.Models
         }
         public DbSet<Student> Students {get;set;}
         public DbSet<StudentCourse> StudentCourses {get;set;}
-        public DbSet<DictionaryNoRel> Dictionaries {get;set;}
     }
 }
