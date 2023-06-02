@@ -33,6 +33,7 @@ public class DictionaryBusinessService
       ProcessJsonString(tree, (_,_)=>{}, (node,_)=>{
         if(node.Id == id) found = node;
       });
+      i++;
     }
     return found;
   }
