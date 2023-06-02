@@ -6,7 +6,7 @@ pv:
 dotnetReplicaCount: 1
 dotnetImage:
   repository: jhncde/logicapi
-  tag: "0.1.0"
+  tag: "1.1.0"
 # - service
 dotnetService:
   type: ClusterIP
