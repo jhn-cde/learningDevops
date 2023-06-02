@@ -24,6 +24,11 @@ public class DictionaryController : ControllerBase
     {
         return _dictionaryBS.Get();
     }
+    [HttpGet("Get/{id}")]
+    public DictionaryNoRel? GetId(long id)
+    {
+        return _dictionaryBS.GetId(id);
+    }
     [HttpPost("Insert")]
     public DictionaryRel? Insert(DictionaryRel dictionaryRel)
     {

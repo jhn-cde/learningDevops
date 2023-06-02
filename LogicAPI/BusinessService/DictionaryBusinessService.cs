@@ -24,6 +24,18 @@ public class DictionaryBusinessService
 
     return trees;
   }
+  public DictionaryNoRel? GetId(long id){
+    var jsonString_trees = _dictionaryDS.Get();
+    DictionaryNoRel? found = null;
+    int i = 0;
+    while(found == null &&  i < jsonString_trees.Count()) {
+      var tree = jsonString_trees[i];
+      ProcessJsonString(tree, (_,_)=>{}, (node,_)=>{
+        if(node.Id == id) found = node;
+      });
+    }
+    return found;
+  }
   public DictionaryRel? Insert(DictionaryRel dRel){
     var jsonString_trees = _dictionaryDS.Get();
 
