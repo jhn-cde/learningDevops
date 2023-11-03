@@ -20,12 +20,12 @@ public class DictionaryController : ControllerBase
         return _dictionaryBS.CanConnect();
     }
     [HttpGet("GetAll")]
-    public IEnumerable<DictionaryNoRel> Get()
+    public IEnumerable<Dictionary> Get()
     {
         return _dictionaryBS.Get();
     }
     [HttpGet("Get/{id}")]
-    public DictionaryNoRel? GetId(long id)
+    public Dictionary? GetId(long id)
     {
         return _dictionaryBS.GetId(id);
     }
@@ -35,7 +35,7 @@ public class DictionaryController : ControllerBase
         return _dictionaryBS.Insert(dictionaryRel);
     }
     [HttpPost("Update/{id}")]
-    public DictionaryNoRel? Update(long id, DictionaryRel dictionaryRel)
+    public Dictionary? Update(long id, DictionaryRel dictionaryRel)
     {
         dictionaryRel.Id = id;
         return _dictionaryBS.Update(dictionaryRel);

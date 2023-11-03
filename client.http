@@ -1,0 +1,13 @@
+GET http://localhost/logicapi/Dictionary/GetAll HTTP/1.1
+
+###
+
+POST http://localhost/logicapi/Dictionary/Insert HTTP/1.1
+content-type: application/json
+
+{
+    "Id": "0",
+    "Name": "Koko",
+    "Value": "9997",
+    "FatherId": 4
+}

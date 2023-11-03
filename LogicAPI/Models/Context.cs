@@ -10,7 +10,7 @@ namespace LogicAPI.Models
 
         }
 
-        public DbSet<Dictionary> Dictionaries {get;set;}
+        public DbSet<SerializedDictionary> Dictionaries {get;set;}
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

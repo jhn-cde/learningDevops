@@ -2,18 +2,19 @@ version: "3.8"
 services:
   angular:
     build:
-      context: ./myschool
+      context: ./frontapp
       dockerfile: Dockerfile
     ports:
       - "4200:80"
-    links:
+    depends_on:
       - api
+      - api2
   api:
     build:
       context: ./MicroserviceOne
       dockerfile: Dockerfile
     ports:
-      - "5000:80"
+      - "5001:80"
     links:
       - db
     environment:
@@ -34,6 +35,20 @@ services:
       - MYSQL_DATABASE=school
     volumes:
       - db_data:/var/lib/mysql
+  api2:
+    build:
+      context: ./LogicAPI
+      dockerfile: Dockerfile
+    ports:
+      - "5000:80"
+    links:
+      - db
+    environment:
+      - DBHOST=db
+      - DBPORT=3306
+      - MYSQL_PASSWORD=140156
+      - MYSQL_USER=root
+      - MYSQL_DATABASE=logic
   proxy:
     build:
       context: ./proxy
@@ -43,5 +58,6 @@ services:
     links:
       - angular
       - api
+      - api2
 volumes:
   db_data:

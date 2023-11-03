@@ -2,31 +2,31 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LogicAPI
 {
-  public class DictionaryNoRel
+  public class Dictionary
   {
     [Key]
     public long Id {get; set;}
     public string Name {get; set;}
     public string Value {get; set;}
-    public List<DictionaryNoRel> Childs {get; set;}
+    public List<Dictionary> Children {get; set;}
     
-    public DictionaryNoRel(){
+    public Dictionary(){
       Id = -1;
       Name = "";
       Value = "";
-      Childs = new List<DictionaryNoRel>();
+      Children = new List<Dictionary>();
     }
-    public DictionaryNoRel(long id, string name, string value, List<DictionaryNoRel> childs){
+    public Dictionary(long id, string name, string value, List<Dictionary> childs){
       Id = id;
       Name = name;
       Value = value;
-      Childs = childs;
+      Children = childs;
     }
-    public DictionaryNoRel(DictionaryNoRel dictionaryNoRel){
+    public Dictionary(Dictionary dictionaryNoRel){
       Id = dictionaryNoRel.Id;
       Name = dictionaryNoRel.Name;
       Value = dictionaryNoRel.Value;
-      Childs = dictionaryNoRel.Childs;
+      Children = dictionaryNoRel.Children;
     }
   }
 }

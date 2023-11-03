@@ -12,22 +12,22 @@ public class DictionaryDataService
   public bool CanConnect(){
     return _context.Database.CanConnect();
   }
-  public List<Dictionary> Get(){
+  public List<SerializedDictionary> Get(){
     var tmp = _context.Dictionaries.ToList();
     return tmp;
   }
-  public Dictionary Insert(Dictionary dictionary){
+  public SerializedDictionary Insert(SerializedDictionary dictionary){
     _context.Dictionaries.Add(dictionary);
     _context.SaveChanges();
     return dictionary;
   }
-  public Dictionary? Update(Dictionary dictionary){
+  public SerializedDictionary? Update(SerializedDictionary dictionary){
     var dicDbo = _context.Dictionaries.Find(dictionary.Id);
     if(dicDbo == null) return null;
 
     dicDbo.Name = dictionary.Name;
     dicDbo.Value = dictionary.Value;
-    dicDbo.Childs = dictionary.Childs;
+    dicDbo.Children = dictionary.Children;
     _context.SaveChanges();
     return dictionary;
   }
