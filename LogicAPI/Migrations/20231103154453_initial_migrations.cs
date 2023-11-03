@@ -6,7 +6,7 @@ using MySql.EntityFrameworkCore.Metadata;
 namespace LogicAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class first_migration : Migration
+    public partial class initial_migrations : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -22,7 +22,7 @@ namespace LogicAPI.Migrations
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(type: "longtext", nullable: false),
                     Value = table.Column<string>(type: "longtext", nullable: false),
-                    Childs = table.Column<string>(type: "longtext", nullable: false)
+                    Children = table.Column<string>(type: "longtext", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LogicAPI.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20230601224454_initial_migration")]
-    partial class initial_migration
+    [Migration("20231103154453_initial_migrations")]
+    partial class initial_migrations
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,13 +21,13 @@ namespace LogicAPI.Migrations
                 .HasAnnotation("ProductVersion", "7.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("LogicAPI.Dictionary", b =>
+            modelBuilder.Entity("LogicAPI.SerializedDictionary", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    b.Property<string>("Childs")
+                    b.Property<string>("Children")
                         .IsRequired()
                         .HasColumnType("longtext");
 

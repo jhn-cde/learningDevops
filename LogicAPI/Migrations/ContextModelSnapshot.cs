@@ -18,13 +18,13 @@ namespace LogicAPI.Migrations
                 .HasAnnotation("ProductVersion", "7.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("LogicAPI.Dictionary", b =>
+            modelBuilder.Entity("LogicAPI.SerializedDictionary", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    b.Property<string>("Childs")
+                    b.Property<string>("Children")
                         .IsRequired()
                         .HasColumnType("longtext");
 
